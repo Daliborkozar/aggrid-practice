@@ -1,0 +1,39 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Dalibor",
+      "email": "dalibor@test.com",
+      "phone": "06423251755",
+      "dob": "20/10/1967"
+    },
+    {
+      "name": "dada",
+      "email": "kada@gmail.com",
+      "phone": "064596985225",
+      "dob": "bla",
+      "id": 2
+    },
+    {
+      "name": "dada",
+      "email": "kada@gmail.com",
+      "phone": "064596985225",
+      "dob": "bla",
+      "id": 3
+    },
+    {
+      "name": "dsada",
+      "email": "projektant@test.com",
+      "phone": "556614544",
+      "dob": "",
+      "id": 4
+    },
+    {
+      "name": "dsadadd",
+      "email": "projektant@test.com",
+      "phone": "556614544",
+      "dob": "",
+      "id": 5
+    }
+  ]
+}
