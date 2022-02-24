@@ -18,16 +18,18 @@ const style = {
   p: 4,
 };
 
+const initialValues = {
+  name: "",
+  email: "",
+  phone: "",
+  dob: "",
+};
+
 function App() {
   const [gridApi, setGridApi] = useState(null);
   const [tableData, setTableData] = useState(null);
   const [open, setOpen] = React.useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    dob: "",
-  });
+  const [formData, setFormData] = useState(initialValues);
 
   const columnDefs = [
     { headerName: "ID", field: "id" },
@@ -35,6 +37,28 @@ function App() {
     { headerName: "Email", field: "email" },
     { headerName: "Phone", field: "phone" },
     { headerName: "Dob", field: "dob" },
+    {
+      headerName: "actions",
+      field: "id",
+      cellRenderer: (params) => (
+        <div>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => handleEdit(params.data)}
+          >
+            edit
+          </Button>{" "}
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => handleDelete(params.value)}
+          >
+            delete
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   const getUsers = () => {
@@ -72,16 +96,51 @@ function App() {
   };
 
   const handleFormSubmit = () => {
-    fetch("http://localhost:4000/users", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: { "content-type": "application/json" },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        setOpen(false);
-        getUsers();
-      });
+    if (formData.id) {
+      // const confirm = window.confirm(
+      //   "Are you sure, you want to update this row ?"
+      // );
+      // confirm &&
+        fetch(`http://localhost:4000/users/${formData.id}`, {
+          method: "PUT",
+          body: JSON.stringify(formData),
+          headers: { "content-type": "application/json" },
+        })
+          .then((resp) => resp.json())
+          .then((resp) => {
+            handleClose();
+            getUsers();
+          });
+    } else {
+      fetch("http://localhost:4000/users", {
+        method: "POST",
+        body: JSON.stringify(formData),
+        headers: { "content-type": "application/json" },
+      })
+        .then((response) => response.json())
+        .then((response) => {
+          handleClose();
+          getUsers();
+          setFormData(initialValues);
+        });
+    }
+  };
+
+  const handleDelete = (id) => {
+    const confirm = window.confirm(
+      "Are you sure, you want to delete this row",
+      id
+    );
+    if (confirm) {
+      fetch(`http://localhost:4000/users/${id}`, { method: "DELETE" })
+        .then((resp) => resp.json())
+        .then((resp) => getUsers());
+    }
+  };
+
+  const handleEdit = (dataFromRow) => {
+    setFormData(dataFromRow);
+    handleOpen();
   };
 
   console.log(formData);
@@ -92,7 +151,7 @@ function App() {
       <Button variant="contained" onClick={handleOpen}>
         Add user
       </Button>
-      <div className="ag-theme-alpine" style={{ height: "400px" }}>
+      <div className="ag-theme-alpine" style={{ height: "600px" }}>
         <AgGridReact
           rowData={tableData}
           columnDefs={columnDefs}
