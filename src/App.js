@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import Button from "@mui/material/Button";
 import Modal from "./components/users/Modal";
@@ -26,13 +26,14 @@ const initialValues = {
 };
 
 function App() {
+  const gridRef = useRef();
   const [gridApi, setGridApi] = useState(null);
   const [tableData, setTableData] = useState(null);
   const [open, setOpen] = React.useState(false);
   const [formData, setFormData] = useState(initialValues);
 
   const columnDefs = [
-    { headerName: "ID", field: "id" },
+    { headerName: "ID", field: "id",checkboxSelection: true, headerCheckboxSelection: true},
     { headerName: "Name", field: "name" },
     { headerName: "Email", field: "email" },
     { headerName: "Phone", field: "phone" },
@@ -67,15 +68,12 @@ function App() {
       .then((response) => setTableData(response));
   };
 
-  const onGridReady = (params) => {
-    setGridApi(params);
-  };
-
   const defaultColDef = {
     sortable: true,
     flex: 1,
     filter: true,
     floatingFilter: true,
+    
   };
 
   useEffect(() => {
@@ -101,16 +99,16 @@ function App() {
       //   "Are you sure, you want to update this row ?"
       // );
       // confirm &&
-        fetch(`http://localhost:4000/users/${formData.id}`, {
-          method: "PUT",
-          body: JSON.stringify(formData),
-          headers: { "content-type": "application/json" },
-        })
-          .then((resp) => resp.json())
-          .then((resp) => {
-            handleClose();
-            getUsers();
-          });
+      fetch(`http://localhost:4000/users/${formData.id}`, {
+        method: "PUT",
+        body: JSON.stringify(formData),
+        headers: { "content-type": "application/json" },
+      })
+        .then((resp) => resp.json())
+        .then((resp) => {
+          handleClose();
+          getUsers();
+        });
     } else {
       fetch("http://localhost:4000/users", {
         method: "POST",
@@ -143,20 +141,50 @@ function App() {
     handleOpen();
   };
 
+  const onGridReady = (params) => {
+    setGridApi(params);
+    console.log('params' , params)
+  };
+
+  const onExcelExport = () => {
+    gridRef.current.api.exportDataAsCsv();
+    console.log(gridRef.current.props.rowData);
+  };
+
+
+  const onSelectionChange = (event) => {
+    console.log(event.api.getSelectedRows())
+  }
+
   console.log(formData);
   return (
     <div>
-      <h1 align="center">React-App</h1>
+      <h1 align="center">Ag-grid</h1>
       <h3>Crud operations with json server in ag grid</h3>
       <Button variant="contained" onClick={handleOpen}>
         Add user
       </Button>
-      <div className="ag-theme-alpine" style={{ height: "600px" }}>
+      <Button variant="contained" onClick={onExcelExport}>
+        export excel
+      </Button>
+      {/* <Button variant="contained" onClick={onSelection}>
+        selected
+      </Button> */}
+      <div className="ag-theme-alpine">
         <AgGridReact
+          ref={gridRef}
           rowData={tableData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
+          domLayout="autoHeight"
+          pagination={true}
+          paginationPageSize={8}
+          
           onGridReady={onGridReady}
+          //multiple rows select
+          rowSelection="multiple" 
+          // on selection change for selection
+          onSelectionChanged={onSelectionChange}
         ></AgGridReact>
       </div>
       <Modal
